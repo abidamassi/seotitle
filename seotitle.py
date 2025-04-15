@@ -1,8 +1,11 @@
 import streamlit as st
 import openai
+import os
+from dotenv import load_dotenv
 
-# 🔐 Set your OpenAI API key here
-openai.api_key = "your-api-key-here"  # replace with your actual key
+# 🔐 Load secret key from .env (for local) or Streamlit secrets (for cloud)
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY", st.secrets.get("OPENAI_API_KEY", None))
 
 # 🧠 GPT prompt function
 def generate_seo(prompt):
