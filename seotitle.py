@@ -1,24 +1,23 @@
 import streamlit as st
 from openai import OpenAI
-import os
 
-# 🔐 Securely load API key (from Streamlit Cloud secrets)
+# 🔐 Load OpenAI key from Streamlit secrets
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-# 🧠 GPT Function (v1 SDK format)
+# 🧠 Generate SEO output
 def generate_seo(prompt):
     response = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-3.5-turbo",  # ✅ using accessible model
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
         max_tokens=120
     )
     return response.choices[0].message.content.strip()
 
-# 🖼️ Page setup
+# 🖼️ Streamlit config
 st.set_page_config(page_title="Meta Optimizer AI", page_icon="🔍", layout="centered")
 
-# 🎨 Inline Tailwind-style CSS with white heading
+# 🎨 Inline Tailwind-style CSS (white title)
 st.markdown("""
     <style>
     body {
@@ -27,7 +26,7 @@ st.markdown("""
     .big-title {
         font-size: 2.5rem;
         font-weight: 700;
-        color: white;  /* ← white heading */
+        color: white;
         margin-bottom: 0.5rem;
     }
     .subhead {
