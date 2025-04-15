@@ -1,11 +1,9 @@
 import streamlit as st
 import openai
 import os
-from dotenv import load_dotenv
 
-# 🔐 Load secret key from .env (for local) or Streamlit secrets (for cloud)
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY", st.secrets.get("OPENAI_API_KEY", None))
+# 🔐 Securely load OpenAI API key from Streamlit secrets
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # 🧠 GPT prompt function
 def generate_seo(prompt):
@@ -18,16 +16,14 @@ def generate_seo(prompt):
     return response.choices[0].message['content'].strip()
 
 # 🖼️ Page config
-st.set_page_config(
-    page_title="Meta Optimizer AI",
-    page_icon="🔍",
-    layout="centered",
-)
+st.set_page_config(page_title="Meta Optimizer AI", page_icon="🔍", layout="centered")
 
-# 🎨 Tailwind-style CSS
-st.markdown(
-    """
+# 🎨 Inline Tailwind-style CSS
+st.markdown("""
     <style>
+    body {
+        background-color: #F9FAFB;
+    }
     .big-title {
         font-size: 2.5rem;
         font-weight: 700;
@@ -50,15 +46,13 @@ st.markdown(
         text-align: center;
     }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
 # 📌 Header
 st.markdown('<div class="big-title">🔍 Meta Optimizer AI</div>', unsafe_allow_html=True)
 st.markdown('<div class="subhead">Learn from competitors and generate SEO-friendly meta titles or descriptions</div>', unsafe_allow_html=True)
 
-# 🧾 Input section
+# 🧾 Input
 meta_type = st.radio("What do you want to generate?", ["Meta Title", "Meta Description"])
 examples = st.text_area("Paste at least 5 competitor examples (one per line):", height=200)
 
