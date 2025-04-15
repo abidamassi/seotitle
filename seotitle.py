@@ -1,23 +1,33 @@
 import streamlit as st
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
+import time
 
-# 🔐 Load OpenAI key from Streamlit secrets
+# 🔐 Securely load API key
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-# 🧠 Generate SEO output
-def generate_seo(prompt):
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",  # ✅ using accessible model
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-        max_tokens=120
-    )
-    return response.choices[0].message.content.strip()
+# 🧠 GPT Function with retry logic
+def generate_seo(prompt, retries=2, wait_time=5):
+    for attempt in range(retries + 1):
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",  # ✅ using high-TPM model
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+                max_tokens=120
+            )
+            return response.choices[0].message.content.strip()
+        except RateLimitError:
+            if attempt < retries:
+                st.warning(f"⚠️ Rate limit hit. Retrying in {wait_time} seconds... ({attempt + 1}/{retries})")
+                time.sleep(wait_time)
+            else:
+                st.error("🚫 Reached API rate limit. Please wait a moment and try again.")
+                return ""
 
-# 🖼️ Streamlit config
+# 🖼️ Streamlit page config
 st.set_page_config(page_title="Meta Optimizer AI", page_icon="🔍", layout="centered")
 
-# 🎨 Inline Tailwind-style CSS (white title)
+# 🎨 Tailwind-style CSS (with white header)
 st.markdown("""
     <style>
     body {
@@ -55,7 +65,7 @@ st.markdown('<div class="subhead">Learn from competitors and generate SEO-friend
 meta_type = st.radio("What do you want to generate?", ["Meta Title", "Meta Description"])
 examples = st.text_area("Paste at least 5 competitor examples (one per line):", height=200)
 
-# 🔁 Generate button
+# 🔁 Generate Output
 if st.button("Generate Recommendation"):
     lines = [line.strip() for line in examples.split("\n") if line.strip()]
     if len(lines) < 5:
@@ -70,8 +80,9 @@ that is different from the rest but still follows best SEO practices. Keep it un
 
         with st.spinner("Analyzing and generating..."):
             output = generate_seo(prompt)
-            st.success("✅ Here’s your optimized output:")
-            st.markdown(f"```text\n{output}\n```")
+            if output:
+                st.success("✅ Here’s your optimized output:")
+                st.markdown(f"```text\n{output}\n```")
 
 # 📦 Footer
-st.markdown('<div class="footer">Made with ❤️ using Streamlit and GPT • © 2025 Meta Optimizer AI</div>', unsafe_allow_html=True)
+st.markdown('<div class="footer">Created by Abida Massi</div>', unsafe_allow_html=True)
